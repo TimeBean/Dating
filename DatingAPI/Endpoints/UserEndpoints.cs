@@ -14,7 +14,6 @@ namespace DatingAPI.Endpoints
             app.MapGet("/api/users/{id:int}", async (int id, AppDatabaseContext db) =>
             {
                 var user = await db.Users.FindAsync(id);
-                
                 return user is not null ? Results.Ok(user) : Results.NotFound();
             });
 
@@ -22,33 +21,33 @@ namespace DatingAPI.Endpoints
             {
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
-                
                 return Results.Created($"/api/users/{user.Id}", user);
             });
 
             app.MapPut("/api/users/{id:int}", async (int id, User updatedUser, AppDatabaseContext db) =>
             {
                 var user = await db.Users.FindAsync(id);
-                
                 if (user is null) 
                     return Results.NotFound();
 
                 user.Name = updatedUser.Name;
-                await db.SaveChangesAsync();
+                user.Description = updatedUser.Description;
+                user.Age = updatedUser.Age;
+                user.Latitude = updatedUser.Latitude;
+                user.Longitude = updatedUser.Longitude;
 
+                await db.SaveChangesAsync();
                 return Results.NoContent();
             });
 
             app.MapDelete("/api/users/{id:int}", async (int id, AppDatabaseContext db) =>
             {
                 var user = await db.Users.FindAsync(id);
-                
                 if (user is null) 
                     return Results.NotFound();
 
                 db.Users.Remove(user);
                 await db.SaveChangesAsync();
-
                 return Results.NoContent();
             });
         }
