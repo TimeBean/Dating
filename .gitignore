@@ -1,1 +1,5 @@
-./idea
+./idea/
+./DatingAPI/bin/
+./DatingAPI/obj/
+./DatingAPI/appsettings.json
+
