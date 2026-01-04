@@ -54,6 +54,34 @@ namespace DatingAPI.Endpoints
                 
                 return Results.NoContent();
             });
+            
+            app.MapPatch("/api/users/{id:int}", async (
+                int id,
+                UpdateUserDto dto,
+                AppDatabaseContext db) =>
+            {
+                var user = await db.Users.FindAsync(id);
+                if (user is null)
+                    return Results.NotFound();
+
+                if (dto.Name is not null)
+                    user.Name = dto.Name;
+
+                if (dto.Description is not null)
+                    user.Description = dto.Description;
+
+                if (dto.Age.HasValue)
+                    user.Age = dto.Age.Value;
+
+                if (dto.Latitude.HasValue)
+                    user.Latitude = dto.Latitude.Value;
+
+                if (dto.Longitude.HasValue)
+                    user.Longitude = dto.Longitude.Value;
+
+                await db.SaveChangesAsync();
+                return Results.NoContent();
+            });
         }
     }
 }
