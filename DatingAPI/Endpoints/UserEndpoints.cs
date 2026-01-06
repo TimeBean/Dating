@@ -1,6 +1,5 @@
 using DatingAPI.Data;
-using DatingContracts;
-using DatingContracts.Dtos;
+using DatingAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatingAPI.Endpoints
@@ -12,39 +11,39 @@ namespace DatingAPI.Endpoints
             app.MapGet("/api/users", async (AppDatabaseContext db) =>
                 await db.Users.ToListAsync());
 
-            app.MapGet("/api/users/{id:int}", async (int id, AppDatabaseContext db) =>
+            app.MapGet("/api/users/{chatId:long}", async (long chatId, AppDatabaseContext db) =>
             {
-                var user = await db.Users.FindAsync(id);
+                var user = await db.Users.FindAsync(chatId);
                 
                 return user is not null ? Results.Ok(user) : Results.NotFound();
             });
 
-            app.MapPost("/api/users", async (UserDto userDto, AppDatabaseContext db) =>
+            app.MapPost("/api/users", async (User user, AppDatabaseContext db) =>
             {
-                db.Users.Add(userDto);
+                db.Users.Add(user);
                 await db.SaveChangesAsync();
                 
-                return Results.Created($"/api/users/{userDto.ChatId}", userDto);
+                return Results.Created($"/api/users/{user.ChatId}", user);
             });
 
-            app.MapPut("/api/users/{id:int}", async (int id, UserDto updatedUserDto, AppDatabaseContext db) =>
+            app.MapPut("/api/users/{chatId:long}", async (long id, AppDatabaseContext db) =>
             {
                 var user = await db.Users.FindAsync(id);
                 if (user is null) 
                     return Results.NotFound();
 
-                user.Name = updatedUserDto.Name;
-                user.Description = updatedUserDto.Description;
-                user.Age = updatedUserDto.Age;
-                user.Latitude = updatedUserDto.Latitude;
-                user.Longitude = updatedUserDto.Longitude;
+                user.Name = user.Name;
+                user.Description = user.Description;
+                user.Age = user.Age;
+                user.Latitude = user.Latitude;
+                user.Longitude = user.Longitude;
 
                 await db.SaveChangesAsync();
                 
                 return Results.NoContent();
             });
 
-            app.MapDelete("/api/users/{id:int}", async (int id, AppDatabaseContext db) =>
+            app.MapDelete("/api/users/{chatId:long}", async (long id, AppDatabaseContext db) =>
             {
                 var user = await db.Users.FindAsync(id);
                 if (user is null) 
@@ -56,29 +55,26 @@ namespace DatingAPI.Endpoints
                 return Results.NoContent();
             });
             
-            app.MapPatch("/api/users/{id:int}", async (
-                int id,
-                UpdateUserDto dto,
-                AppDatabaseContext db) =>
+            app.MapPatch("/api/users/{chatId:long}", async (long chatId, UpdateUser updateUser, AppDatabaseContext db) =>
             {
-                var user = await db.Users.FindAsync(id);
+                var user = await db.Users.FindAsync(chatId);
                 if (user is null)
                     return Results.NotFound();
 
-                if (dto.Name is not null)
-                    user.Name = dto.Name;
+                if (updateUser.Name is not null)
+                    user.Name = updateUser.Name;
 
-                if (dto.Description is not null)
-                    user.Description = dto.Description;
+                if (updateUser.Description is not null)
+                    user.Description = updateUser.Description;
 
-                if (dto.Age.HasValue)
-                    user.Age = dto.Age.Value;
+                if (updateUser.Age.HasValue)
+                    user.Age = updateUser.Age.Value;
 
-                if (dto.Latitude.HasValue)
-                    user.Latitude = dto.Latitude.Value;
+                if (updateUser.Latitude.HasValue)
+                    user.Latitude = updateUser.Latitude.Value;
 
-                if (dto.Longitude.HasValue)
-                    user.Longitude = dto.Longitude.Value;
+                if (updateUser.Longitude.HasValue)
+                    user.Longitude = updateUser.Longitude.Value;
 
                 await db.SaveChangesAsync();
                 return Results.NoContent();

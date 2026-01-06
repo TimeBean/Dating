@@ -83,6 +83,6 @@ public class Wrapper
     public Task DeleteUserAsync(int id)
         => DeleteAsync($"/api/users/{id}");
     
-    public Task PatchUserAsync(int id, UpdateUserDto update)
+    public Task PatchUserAsync(int id, UpdateUser update)
         => PatchAsync($"/api/users/{id}", update);
 }

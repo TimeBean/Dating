@@ -1,6 +1,6 @@
 namespace DatingContracts.Dtos;
 
-public class UpdateUserDto
+public class UpdateUser
 {
     public long ChatId { get; set; }
     public string? Name { get; set; }

@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DatingAPIWrapper\DatingAPIWrapper.csproj" />
       <ProjectReference Include="..\DatingContracts\DatingContracts.csproj" />
     </ItemGroup>
 

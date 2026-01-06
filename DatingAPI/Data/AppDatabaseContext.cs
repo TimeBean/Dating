@@ -1,5 +1,4 @@
-using DatingContracts;
-using DatingContracts.Dtos;
+using DatingAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatingAPI.Data
@@ -8,6 +7,6 @@ namespace DatingAPI.Data
     {
         public AppDatabaseContext(DbContextOptions<AppDatabaseContext> options) : base(options) { }
 
-        public DbSet<UserDto> Users { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

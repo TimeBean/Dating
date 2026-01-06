@@ -1,4 +1,6 @@
-﻿using DatingTelegramBot.DialogSteps;
+﻿using DatingAPIWrapper;
+using DatingAPIWrapper.Options;
+using DatingTelegramBot.DialogSteps;
 using DatingTelegramBot.Handlers;
 using DatingTelegramBot.Repositories;
 using DatingTelegramBot.Services;
@@ -6,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
 var host = Host.CreateDefaultBuilder(args)
@@ -16,7 +19,7 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((context, services) =>
     {
-        var token = context.Configuration["TG_TOKEN"] ?? context.Configuration["TOKEN"];
+        var token = context.Configuration["TG_TOKEN"] ?? context.Configuration["Token"];
 
         if (string.IsNullOrWhiteSpace(token))
             throw new InvalidOperationException(
@@ -24,6 +27,16 @@ var host = Host.CreateDefaultBuilder(args)
 
         services.AddSingleton<ITelegramBotClient>(_ => new TelegramBotClient(token));
         services.AddSingleton<ITelegramBotClient>(_ => new TelegramBotClient(token));
+        services.Configure<WrapperOption>(
+            context.Configuration.GetSection("DatingApi")
+        );
+        services.AddHttpClient<Wrapper>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<WrapperOption>>().Value;
+
+            client.BaseAddress = new Uri(options.BaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
         services.AddSingleton<IUserSessionRepository, InMemorySessionRepository>();
         services.AddHostedService<TelegramBotHostedService>();
         services.AddHttpClient();
