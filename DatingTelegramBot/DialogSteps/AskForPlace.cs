@@ -3,6 +3,8 @@ using DatingTelegramBot.Models;
 using DatingTelegramBot.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DatingTelegramBot.DialogSteps;
 
@@ -16,27 +18,41 @@ public class AskForPlace : IDialogStep
         _geo = geo;
     }
     
-    public async Task HandleAsync(ITelegramBotClient bot, UserSession session, Message message, CancellationToken ct)
+    public async Task HandleAsync(ITelegramBotClient bot, UserSession session, Update update, CancellationToken ct)
     {
-        var coords = await _geo.GeocodeAsync(message.Text, ct);
+        if (update.Type != UpdateType.Message)
+            return;
+        
+        var coords = await _geo.GeocodeAsync(update.Message!.Text!, ct);
 
         if (coords != null)
         {
             session.Latitude = coords.Value.lat;
             session.Longitude = coords.Value.lon;
             
-            session.State = DialogState.None;
+            session.State = DialogState.WaitingForAddDescription;
 
             await bot.SendMessage(
-                chatId: message.Chat.Id,
+                chatId: update.Message.Chat.Id,
                 text: $"Ясно, {session.Name}. Тебе {session.Age} лет. И ты из {session.Latitude}, {session.Longitude}",
+                replyMarkup: new InlineKeyboardMarkup()
+                { 
+                    InlineKeyboard = new List<IEnumerable<InlineKeyboardButton>>()
+                    {
+                        new []
+                        {
+                            new InlineKeyboardButton("Да", "AddDescriptionAgree"),
+                            new InlineKeyboardButton("Нет", "AddDescriptionDisagree")
+                        }
+                    }
+                }, 
                 cancellationToken: ct
             );
         }
         else
         {
             await bot.SendMessage(
-                chatId: message.Chat.Id,
+                chatId: update.Message.Chat.Id,
                 text: $"Место не найдено. ${session.Name}, попробуйте переформулировать.",
                 cancellationToken: ct
             );

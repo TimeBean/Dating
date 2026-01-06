@@ -44,6 +44,8 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IDialogStep, AskNameStep>();
         services.AddSingleton<IDialogStep, AskAgeStep>();
         services.AddSingleton<IDialogStep, AskForPlace>();
+        services.AddSingleton<IDialogStep, AskForAddDescription>();
+        services.AddSingleton<IDialogStep, AskForDescription>();
     })
     .ConfigureLogging(l => l.AddConsole())
     .Build();

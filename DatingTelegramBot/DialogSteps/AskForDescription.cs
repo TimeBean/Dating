@@ -6,22 +6,22 @@ using Telegram.Bot.Types.Enums;
 
 namespace DatingTelegramBot.DialogSteps;
 
-public class AskNameStep : IDialogStep
+public class AskForDescription : IDialogStep
 {
-    public DialogState State => DialogState.WaitingForName;
-
+    public DialogState State => DialogState.WaitingForDescription;
+    
     public async Task HandleAsync(ITelegramBotClient bot, UserSession session, Update update, CancellationToken ct)
     {
         if (update.Type != UpdateType.Message)
             return;
         
-        session.Name = update.Message!.Text;
-
-        session.State = DialogState.WaitingForAge;
-
+        session.State = DialogState.None;
+        
+        session.Description = update.Message!.Text;
+        
         await bot.SendMessage(
-            update.Message.Chat.Id,
-            $"Приятно познакомиться, {update.Message.Text}! Сколько тебе лет?",
+            update.Message!.Chat.Id,
+            $"Данные профиля: \n{session.Name}\n{session.Age}\n{session.Description}\n{session.Latitude} {session.Longitude}",
             cancellationToken: ct
         );
     }

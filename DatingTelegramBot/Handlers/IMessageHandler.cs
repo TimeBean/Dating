@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 public interface IMessageHandler
 {
-    Task HandleAsync(ITelegramBotClient bot, Message message, CancellationToken cancellationToken);
+    Task HandleAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken);
 }

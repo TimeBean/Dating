@@ -5,5 +5,7 @@ public enum DialogState
     None,
     WaitingForName,
     WaitingForAge,
-    WaitingForPlace
+    WaitingForPlace,
+    WaitingForAddDescription,
+    WaitingForDescription
 }

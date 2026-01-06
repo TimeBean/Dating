@@ -9,6 +9,6 @@ public interface IDialogStep
 {
     DialogState State { get; }
 
-    Task HandleAsync(ITelegramBotClient bot, UserSession session, Message message, CancellationToken ct);
+    Task HandleAsync(ITelegramBotClient bot, UserSession session, Update update, CancellationToken ct);
 }
 

@@ -18,14 +18,15 @@ namespace DatingTelegramBot.Services
         private readonly IUserSessionRepository _repository;
         private readonly IMessageHandler _messageHandler;
 
-        public TelegramBotHostedService(ITelegramBotClient bot, ILogger<TelegramBotHostedService> logger, IEnumerable<IUpdateHandler> handlers, IMessageHandler messageHandler, IUserSessionRepository repository) 
+        public TelegramBotHostedService(ITelegramBotClient bot, ILogger<TelegramBotHostedService> logger,
+            IEnumerable<IUpdateHandler> handlers, IMessageHandler messageHandler, IUserSessionRepository repository)
         {
             _bot = bot;
             _logger = logger;
             _messageHandler = messageHandler;
             _repository = repository;
         }
-        
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Bot starting");
@@ -39,24 +40,22 @@ namespace DatingTelegramBot.Services
 
             await Task.Delay(-1, stoppingToken);
         }
-        
+
         private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
         {
-            if (update.Type == UpdateType.Message && update.Message?.Text != null)
-            {
-                var message = update.Message;
-                _logger.LogInformation("Received from {User}: {Text}", message.From.Username, message.Text);
-
-                try
+                if (update.Type == UpdateType.Message)
                 {
-                    if (message.Text.StartsWith("/start"))
+                    var message = update.Message;
+                    _logger.LogInformation("Received from {User}: {Text}", message.From.Username, message.Text);
+                    
+                    if (update.Message?.Text != null && message.Text.Contains("/start"))
                     {
                         var session = await _repository.GetOrCreate(message.Chat.Id);
 
                         session.State = DialogState.WaitingForName;
                         session.Name = null;
                         session.Age = null;
-                        
+
                         await _repository.Update(session);
 
                         await botClient.SendMessage(
@@ -66,21 +65,16 @@ namespace DatingTelegramBot.Services
                         );
                         return;
                     }
-                    
-                    await _messageHandler.HandleAsync(botClient, message, ct);
-                    _logger.LogInformation("Handled message from {ChatId}", message.Chat.Id);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to handle message from {ChatId}", message.Chat.Id);
-                }
-            }
+                
+                await _messageHandler.HandleAsync(botClient, update, ct);
+                _logger.LogInformation("Handled message from {ChatId}", update.Message?.Chat.Id == null ? update.Message?.Chat.Id  : update.CallbackQuery?.From.Id);
         }
 
         private Task HandleErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
         {
             _logger.LogError(exception, "Telegram polling error");
-            
+
             return Task.CompletedTask;
         }
     }

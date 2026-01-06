@@ -2,6 +2,7 @@ using DatingContracts;
 using DatingTelegramBot.Models;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace DatingTelegramBot.DialogSteps;
 
@@ -9,14 +10,17 @@ public class AskAgeStep : IDialogStep
 {
     public DialogState State => DialogState.WaitingForAge;
 
-    public async Task HandleAsync(ITelegramBotClient bot, UserSession session, Message message, CancellationToken ct)
+    public async Task HandleAsync(ITelegramBotClient bot, UserSession session, Update update, CancellationToken ct)
     {
-        session.Age = int.Parse(message.Text);
+        if (update.Type != UpdateType.Message)
+            return;
+        
+        session.Age = int.Parse(update.Message!.Text!);
 
         session.State = DialogState.WaitingForPlace;
 
         await bot.SendMessage(
-            message.Chat.Id,
+            update.Message.Chat.Id,
             $"Ясно, {session.Name}. Тебе {session.Age} лет. Откуда ты?",
             cancellationToken: ct
         );
