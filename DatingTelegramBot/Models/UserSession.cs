@@ -1,3 +1,5 @@
+using DatingContracts;
+
 namespace DatingTelegramBot.Models;
 
 public class UserSession

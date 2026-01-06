@@ -1,5 +1,6 @@
 using DatingAPI.Data;
 using DatingContracts;
+using DatingContracts.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatingAPI.Endpoints

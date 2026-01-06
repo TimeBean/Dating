@@ -1,4 +1,4 @@
-namespace DatingTelegramBot.Models;
+namespace DatingContracts;
 
 public enum DialogState
 {

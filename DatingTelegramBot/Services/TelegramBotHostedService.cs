@@ -1,3 +1,4 @@
+using DatingContracts;
 using DatingTelegramBot.Handlers;
 using DatingTelegramBot.Models;
 using DatingTelegramBot.Repositories;

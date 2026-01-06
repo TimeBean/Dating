@@ -2,6 +2,7 @@
 using DatingAPIWrapper.Exceptions;
 using DatingAPIWrapper.Options;
 using DatingContracts;
+using DatingContracts.Dtos;
 
 namespace DatingAPIWrapper;
 

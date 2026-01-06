@@ -1,10 +1,12 @@
-namespace DatingContracts;
+namespace DatingContracts.Dtos;
 
 public class UpdateUserDto
 {
+    public long ChatId { get; set; }
     public string? Name { get; set; }
-    public string? Description { get; set; }
+    public string? Description { get; set; } 
     public int? Age { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
+    public DialogState? State { get; set; }
 }

@@ -1,3 +1,4 @@
+using DatingContracts;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using DatingTelegramBot.Models;
