@@ -1,5 +1,6 @@
 ﻿using DatingAPIWrapper;
 using DatingAPIWrapper.Options;
+using DatingTelegramBot.Commands;
 using DatingTelegramBot.DialogSteps;
 using DatingTelegramBot.Handlers;
 using DatingTelegramBot.Repositories;
@@ -46,6 +47,9 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IDialogStep, AskForPlace>();
         services.AddSingleton<IDialogStep, AskForAddDescription>();
         services.AddSingleton<IDialogStep, AskForDescription>();
+        services.AddTransient<ICommandHandler, CommandHandler>();
+        services.AddTransient<ICommand, StartCommand>();
+        services.AddTransient<ICommand, ProfileCommand>();
     })
     .ConfigureLogging(l => l.AddConsole())
     .Build();

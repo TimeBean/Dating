@@ -1,4 +1,5 @@
 using DatingContracts;
+using DatingTelegramBot.Exceptions;
 using DatingTelegramBot.Handlers;
 using DatingTelegramBot.Models;
 using DatingTelegramBot.Repositories;
@@ -16,14 +17,17 @@ namespace DatingTelegramBot.Services
         private readonly ITelegramBotClient _bot;
         private readonly ILogger<TelegramBotHostedService> _logger;
         private readonly IUserSessionRepository _repository;
-        private readonly IMessageHandler _messageHandler;
+        private readonly IMessageHandler _dialogHandler;
+        private readonly ICommandHandler _commandHandler;
 
-        public TelegramBotHostedService(ITelegramBotClient bot, ILogger<TelegramBotHostedService> logger, IMessageHandler messageHandler, IUserSessionRepository repository)
+        public TelegramBotHostedService(ITelegramBotClient bot, ILogger<TelegramBotHostedService> logger,
+            IMessageHandler dialogHandler, IUserSessionRepository repository, ICommandHandler commandHandler)
         {
             _bot = bot;
             _logger = logger;
-            _messageHandler = messageHandler;
+            _dialogHandler = dialogHandler;
             _repository = repository;
+            _commandHandler = commandHandler;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,74 +46,35 @@ namespace DatingTelegramBot.Services
 
         private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
         {
-                if (update.Type == UpdateType.Message)
-                {
-                    var message = update.Message;
-                    _logger.LogInformation("Received from {User}: {Text}", message.From.Username, message.Text);
-                    
-                    if (update.Message?.Text != null)
-                    {
-                        if (message!.Text!.Contains("/start") || message.Text.Contains("/reset"))
-                        {
-                            var session = await _repository.GetOrCreate(message.Chat.Id);
+            Console.WriteLine($"UPDATE ID: {update.Id} {update.Type} {update.Message?.Text?.StartsWith("/")}");
+            
+            switch (update.Type)
+            {
+                case UpdateType.Message when update.Message?.Text?.StartsWith("/") == true:
+                    Console.WriteLine("вызываю _commandHandler");
+                    await _commandHandler.HandleAsync(botClient, update, ct);
+                    break;
 
-                            if (session.Name != null && !message.Text.Contains("/reset"))
-                            {
-                                await botClient.SendMessage(
-                                    message.Chat.Id,
-                                    await GetProfileText(botClient,  message.Chat.Id, ct),
-                                    cancellationToken: ct
-                                );
-                            
-                                return;
-                            }
+                case UpdateType.Message:
+                case UpdateType.CallbackQuery:
+                    Console.WriteLine("вызываю _dialogHandler");
+                    await _dialogHandler.HandleAsync(botClient, update, ct);
+                    break;
 
-                            session.State = DialogState.WaitingForName;
-                            session.Name = null;
-                            session.Age = null;
+                default:
+                    throw new UnknownUpdateException();
+            }
 
-                            await _repository.Update(session);
-
-                            await botClient.SendMessage(
-                                message.Chat.Id,
-                                "Привет! Давай начнем. Как тебя зовут?",
-                                cancellationToken: ct
-                            );
-                            return;
-                        }
-                        if (message.Text.Contains("/profile"))
-                        {
-                            await botClient.SendMessage(
-                                message.Chat.Id,
-                                await GetProfileText(botClient, message.Chat.Id, ct),
-                                cancellationToken: ct
-                            );
-                            return;
-                        }
-                    }
-                }
-                
-                await _messageHandler.HandleAsync(botClient, update, ct);
-                _logger.LogInformation("Handled message from {ChatId}", update.Message?.Chat.Id == null ? update.Message?.Chat.Id  : update.CallbackQuery?.From.Id);
+            _logger.LogInformation("Handled update from {ChatId}",
+                update.Message?.Chat.Id ?? update.CallbackQuery?.From.Id);
         }
 
-        private Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        private Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
+            CancellationToken cancellationToken)
         {
             _logger.LogError(exception, "Telegram polling error");
 
             return Task.CompletedTask;
-        }
-
-        private async Task<string> GetProfileText(ITelegramBotClient botClient, long chatId, CancellationToken ct)
-        {
-            var session = await _repository.GetOrCreate(chatId);
-
-            var profileText = string.Empty;
-
-            profileText +=  "Ваш профиль выглядит так:\n" + 
-                           $"{session.Name}, {session.Age} - {session.Description} ";
-            
-            return profileText;
         }
     }
 }

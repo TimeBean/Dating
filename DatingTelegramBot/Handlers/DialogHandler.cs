@@ -20,32 +20,18 @@ public class DialogHandler : IMessageHandler
 
     public async Task HandleAsync(ITelegramBotClient bot, Update update, CancellationToken ct)
     {
-        long chatId;
+        var chatId = update.Type switch
+        {
+            UpdateType.Message => update.Message!.Chat.Id,
+            UpdateType.CallbackQuery => update.CallbackQuery!.From.Id,
+            _ => throw new UnknownUpdateException()
+        };
 
-        if (update.Type == UpdateType.Message)
-        {
-            chatId = update.Message!.Chat.Id;
-        }
-        else if (update.Type == UpdateType.CallbackQuery)
-        {
-            chatId = update.CallbackQuery!.From.Id;
-        }
-        else
-        {
-            throw new UnknownUpdateException();
-        }
-        
         var session = await _repository.GetOrCreate(chatId);
         
-        var step = _steps.FirstOrDefault(s => s.State == session.State);
+        var step = _steps.FirstOrDefault(s => s.State == session.State) ?? new AskNameStep();
 
-        if (step == null)
-        {
-            step = new AskNameStep();
-        }
-        
         await step.HandleAsync(bot, session, update, ct);
-
         await _repository.Update(session);
     }
 }
