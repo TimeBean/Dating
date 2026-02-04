@@ -1,12 +1,12 @@
 using DatingAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DatingAPI.Data
-{
-    public class AppDatabaseContext : DbContext
-    {
-        public AppDatabaseContext(DbContextOptions<AppDatabaseContext> options) : base(options) { }
+namespace DatingAPI.Data;
 
-        public DbSet<User> Users { get; set; }
-    }
+public class AppDatabaseContext : DbContext
+{
+    public AppDatabaseContext(DbContextOptions<AppDatabaseContext> options) : base(options)
+    { }
+
+    public DbSet<User> Users { get; set; }
 }
